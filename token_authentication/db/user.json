@@ -1,0 +1,33 @@
+[
+    {
+        "id": 1,
+        "name": "John Doe",
+        "email": "john.doe@example.com",
+        "age": 28
+    },
+    {
+        "id": 2,
+        "name": "Jane Smith",
+        "email": "jane.smith@example.com",
+        "age": 32
+    },
+    {
+        "id": 3,
+        "name": "Michael Johnson",
+        "email": "michael.j@example.com",
+        "age": 25
+    },
+    {
+        "id": 4,
+        "name": "Emily Davis",
+        "email": "emily.davis@example.com",
+        "age": 30
+    },
+    {
+        "id": 5,
+        "name": "David Wilson",
+        "email": "david.wilson@example.com",
+        "age": 35
+    }
+]
+
