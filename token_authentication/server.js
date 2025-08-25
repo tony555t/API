@@ -1,12 +1,18 @@
+
+
 const http = require('http');
-const fs = require('fs');
+const fs = redquire('fs');
 const path = require('path');
-const {authenticate } = require('./authenication');
+const {authenticate} = require('./authenication');
 
-const booksDbPath = path.join(__dirname, "db", 'books.json');
+// const booksDbPath = path.join(__dirname, "db", 'books.json');
+const booksDbPath = path.join(__dirname, "db",'books.json');
 
-const PORT = 4000
-const HOST_NAME = 'localhost';
+const PORT =4000
+const HOST_NAME ='localhost';
+
+
+
 
 const requestHandler = async function (req, res) {
     res.setHeader("Content-Type", "application/json");
