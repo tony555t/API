@@ -1,25 +1,21 @@
-
-
 const http = require('http');
-const fs = redquire('fs');
+const fs = require('fs');
 const path = require('path');
 const {authenticate} = require('./authenication');
 
-// const booksDbPath = path.join(__dirname, "db", 'books.json');
-const booksDbPath = path.join(__dirname, "db",'books.json');
+const booksDbPath = path.join(__dirname, "db", 'books.json');
 
-const PORT =4000
-const HOST_NAME ='localhost';
+const PORT = 4000;
+const HOST_NAME = 'localhost';
 
-
-
+let booksDB = []; 
 
 const requestHandler = async function (req, res) {
     res.setHeader("Content-Type", "application/json");
 
     if (req.url === '/books' && req.method === 'GET') {
-       // authenitication
-        authenticateUser(req, res)
+        // authentication - FIXED: changed from 'authenticateUser' to 'authenticate'
+        authenticate(req, res)
             .then(() => {
                 getAllBooks(req, res);
             })
@@ -41,70 +37,65 @@ const requestHandler = async function (req, res) {
             message: 'Method Not Supported'
         }));
     }
-
 }
 
-
-//RETREIVE ALL BOOKS ==> GET /books
+// RETRIEVE ALL BOOKS ==> GET /books
 const getAllBooks = function (req, res) {
     fs.readFile(booksDbPath, "utf8", (err, books) => {
         if (err) {
-            console.log(err)
-            res.writeHead(400)
-            res.end("An error occured")
+            console.log(err);
+            res.writeHead(400);
+            res.end("An error occurred");
+            return; // Added: prevent further execution
         }
-
         res.end(books);
-
-    })
+    });
 }
-
 
 // CREATE A BOOK ==> POST: /books
 const addBook = function (req, res) {
     const body = [];
 
-    req.on('data', (chunk) => { // data event is fired when the server receives data from the client
-        body.push(chunk); // push each data received to the body array
+    req.on('data', (chunk) => {
+        body.push(chunk);
     });
 
     req.on('end', () => {
-        const parsedBody = Buffer.concat(body).toString(); // concatenate raw data into a single buffer string
-        const newBook = JSON.parse(parsedBody); // parse the buffer string into a JSON object
+        const parsedBody = Buffer.concat(body).toString();
+        const newBook = JSON.parse(parsedBody);
 
         // get ID of last book in the database
         const lastBook = booksDB[booksDB.length - 1];
-        const lastBookId = lastBook.id;
+        const lastBookId = lastBook ? lastBook.id : 0; 
         newBook.id = lastBookId + 1;
 
-        //save to db
+        // save to db
         booksDB.push(newBook);
-        fs.writeFile(booksDbPath, JSON.stringify(booksDB), (err) => {
+        fs.writeFile(booksDbPath, JSON.stringify(booksDB, null, 2), (err) => {
             if (err) {
                 console.log(err);
                 res.writeHead(500);
                 res.end(JSON.stringify({
                     message: 'Internal Server Error. Could not save book to database.'
                 }));
+                return; // Added: prevent further execution
             }
-
             res.end(JSON.stringify(newBook));
         });
     });
 }
 
-
 // UPDATE A BOOK ==> PUT: /books
 const updateBook = function (req, res) {
     const body = [];
 
-    req.on('data', (chunk) => { // data event is fired when the server receives data from the client
-        body.push(chunk); // push each data received to the body array
+    req.on('data', (chunk) => {
+        body.push(chunk);
     });
 
     req.on('end', () => {
-        const parsedBody = Buffer.concat(body).toString(); // concatenate raw data into a single buffer string
-        const bookToUpdate = JSON.parse(parsedBody); // parse the buffer string into a JSON object
+        const parsedBody = Buffer.concat(body).toString();
+        const bookToUpdate = JSON.parse(parsedBody);
 
         // find the book in the database
         const bookIndex = booksDB.findIndex((book) => {
@@ -124,62 +115,64 @@ const updateBook = function (req, res) {
         booksDB[bookIndex] = { ...booksDB[bookIndex], ...bookToUpdate };
 
         // save to db
-        fs.writeFile(booksDbPath, JSON.stringify(booksDB), (err) => {
+        fs.writeFile(booksDbPath, JSON.stringify(booksDB, null, 2), (err) => {
             if (err) {
                 console.log(err);
                 res.writeHead(500);
                 res.end(JSON.stringify({
                     message: 'Internal Server Error. Could not update book in database.'
                 }));
+                return; // Added: prevent further execution
             }
-
             res.end(JSON.stringify(bookToUpdate));
         });
     });
 }
 
-
-// DELETE A BOOK ==> DELETE: /books
+// DELETE A BOOK ==> DELETE: /books/:id
 const deleteBook = function (req, res) {
     const bookId = req.url.split('/')[2];
 
     // Remove book from database
     const bookIndex = booksDB.findIndex((book) => {
         return book.id === parseInt(bookId);
-    })
+    });
 
     if (bookIndex === -1) {
         res.writeHead(404);
         res.end(JSON.stringify({
             message: 'Book not found'
         }));
-
         return;
     }
 
-    booksDB.splice(bookIndex, 1); // remove the book from the database using the index
+    booksDB.splice(bookIndex, 1);
 
     // update the db
-    fs.writeFile(booksDbPath, JSON.stringify(booksDB), (err) => {
+    fs.writeFile(booksDbPath, JSON.stringify(booksDB, null, 2), (err) => {
         if (err) {
             console.log(err);
             res.writeHead(500);
             res.end(JSON.stringify({
                 message: 'Internal Server Error. Could not delete book from database.'
             }));
+            return; // Added: prevent further execution
         }
-
         res.end(JSON.stringify({
             message: 'Book deleted'
         }));
     });
-
 }
 
 // Create server
-const server = http.createServer(requestHandler)
+const server = http.createServer(requestHandler);
 
 server.listen(PORT, HOST_NAME, () => {
-    booksDB = JSON.parse(fs.readFileSync(booksDbPath, 'utf8'));
-    console.log(`Server is listening on ${HOST_NAME}:${PORT}`)
-})
+    try {
+        booksDB = JSON.parse(fs.readFileSync(booksDbPath, 'utf8'));
+        console.log(`Server is listening on ${HOST_NAME}:${PORT}`);
+    } catch (err) {
+        console.log('Could not load books database:', err);
+        booksDB = [];
+    }
+});
