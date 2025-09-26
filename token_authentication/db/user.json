@@ -1,37 +1,7 @@
 [
-    {
-        "id": 1,
-        "name": "John Doe",
-        "email": "john.doe@example.com",
-        "age": 28,
-        "password": "password123"
-    },
-    {
-        "id": 2,
-        "name": "Jane Smith",
-        "email": "jane.smith@example.com",
-        "age": 32,
-        "password": "securePass456"
-    },
-    {
-        "id": 3,
-        "name": "Michael Johnson",
-        "email": "michael.j@example.com",
-        "age": 25,
-        "password": "mike2024!"
-    },
-    {
-        "id": 4,
-        "name": "Emily Davis",
-        "email": "emily.davis@example.com",
-        "age": 30,
-        "password": "emilyPass789"
-    },
-    {
-        "id": 5,
-        "name": "David Wilson",
-        "email": "david.wilson@example.com",
-        "age": 35,
-        "password": "davidW@2024"
-    }
+  {
+    "username": "Michael Johnson",
+    "password": "mike2024!",
+    "email": "michael@example.com"
+  }
 ]

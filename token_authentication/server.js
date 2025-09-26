@@ -1,7 +1,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const {authenticate} = require('./authenication');
+const authenticate = require('./authentication'); 
 
 const booksDbPath = path.join(__dirname, "db", 'books.json');
 
@@ -14,7 +14,7 @@ const requestHandler = async function (req, res) {
     res.setHeader("Content-Type", "application/json");
 
     if (req.url === '/books' && req.method === 'GET') {
-        // authentication - FIXED: changed from 'authenticateUser' to 'authenticate'
+        // authentication
         authenticate(req, res)
             .then(() => {
                 getAllBooks(req, res);
@@ -46,7 +46,7 @@ const getAllBooks = function (req, res) {
             console.log(err);
             res.writeHead(400);
             res.end("An error occurred");
-            return; // Added: prevent further execution
+            return;
         }
         res.end(books);
     });
@@ -78,7 +78,7 @@ const addBook = function (req, res) {
                 res.end(JSON.stringify({
                     message: 'Internal Server Error. Could not save book to database.'
                 }));
-                return; // Added: prevent further execution
+                return;
             }
             res.end(JSON.stringify(newBook));
         });
@@ -122,7 +122,7 @@ const updateBook = function (req, res) {
                 res.end(JSON.stringify({
                     message: 'Internal Server Error. Could not update book in database.'
                 }));
-                return; // Added: prevent further execution
+                return;
             }
             res.end(JSON.stringify(bookToUpdate));
         });
@@ -148,20 +148,21 @@ const deleteBook = function (req, res) {
 
     booksDB.splice(bookIndex, 1);
 
-    // update the db
-    fs.writeFile(booksDbPath, JSON.stringify(booksDB, null, 2), (err) => {
-        if (err) {
+    
+
+    fs.writeFile(booksDbPath, JSON.stringify(booksDB,null,2),(err)=>{
+        if(err){
             console.log(err);
             res.writeHead(500);
             res.end(JSON.stringify({
-                message: 'Internal Server Error. Could not delete book from database.'
+                message:'internal Server error.'
             }));
-            return; // Added: prevent further execution
+            return;
         }
         res.end(JSON.stringify({
-            message: 'Book deleted'
-        }));
-    });
+            message:'book deleted '
+        }))
+    })
 }
 
 // Create server
